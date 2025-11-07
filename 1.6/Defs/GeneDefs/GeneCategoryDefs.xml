@@ -1,0 +1,7 @@
+<Defs>
+  <GeneCategoryDef>
+    <defName>BF_MetaGenes</defName>
+    <label>MetaGenes</label>
+    <displayPriorityInXenotype>1301</displayPriorityInXenotype>
+  </GeneCategoryDef>
+</Defs>

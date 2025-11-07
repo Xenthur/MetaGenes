@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  
+  <MessageCannotExtractFromTempFactionMembers>Cannot extract from temporary faction members.</MessageCannotExtractFromTempFactionMembers>
+  <!-- <MessagePawnHasNoXenogenes>{0_labelShort} has no available genes to extract.</MessagePawnHasNoXenogenes> -->
+
+</LanguageData>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+  <LetterTextGenesImplantedBase>{SOURCE_nameDef} has implanted a copy of {SOURCE_possessive} xenogerm into {RECIPIENT_nameDef}, passing all xenogenes onto {RECIPIENT_objective}.</LetterTextGenesImplantedBase>
+  <LetterTextGenesImplantedComa>\n\n{RECIPIENT_nameDef} will be in a xenogermination coma for the next {COMADURATION} while {RECIPIENT_possessive} body adjusts to the changes.</LetterTextGenesImplantedComa>
+  <LetterTextGenesImplantedShock>\n\n{SOURCE_nameDef} will suffer from gene loss shock for the next {SHOCKDURATION}. {SOURCE_possessive} genes will also need to regrow.</LetterTextGenesImplantedShock>
+  <LetterTextGenesImplantedNoShock>\n\n{SOURCE_nameDef}'s genes will need to regrow.</LetterTextGenesImplantedNoShock>
+  <LetterTextGenesImplantedEnd> This process takes time. If {SOURCE_nameDef} implants {SOURCE_possessive} xenogerm again before {SOURCE_possessive} genes have regrown, {SOURCE_pronoun} will die.</LetterTextGenesImplantedEnd>
+
+  <LetterLabelGenesExtracted>Genes extracted</LetterLabelGenesExtracted>
+  <LetterTextGenesExtractedBase>{RECIPIENT_nameDef} has extracted a copy of {SOURCE_nameDef}'s genes and implanted {RECIPIENT_objective}self with a xenogerm containing those genes.</LetterTextGenesExtractedBase>
+  <LetterTextGenesExtractedEnd> This process takes time. If {SOURCE_nameDef} has {SOURCE_possessive} genes extracted again before {SOURCE_possessive} genes have regrown, {SOURCE_pronoun} will die.</LetterTextGenesExtractedEnd>
+	//fte
+
+</LanguageData>
