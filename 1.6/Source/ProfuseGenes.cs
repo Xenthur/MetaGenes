@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -76,7 +77,7 @@ namespace MetaGenes
       }
     }
 
-    [HarmonyPatch(typeof(CompAbilityEffect_ReimplantXenogerm), nameof(CompAbilityEffect_ReimplantXenogerm.Apply))]
+    [HarmonyPatch(typeof(CompAbilityEffect_ReimplantXenogerm), nameof(CompAbilityEffect_ReimplantXenogerm.Apply), [typeof(LocalTargetInfo), typeof(LocalTargetInfo)])]
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> CompAbilityEffect_ReimplantXenogerm_Apply_Patch(IEnumerable<CodeInstruction> instructions)
     {

@@ -55,7 +55,7 @@
     <defName>BF_ProfuseGenes</defName>
     <label>profuse genes</label>
     <description>Carriers have enhanced genetic replication and transcription mechanisms, producing extra copies of their genes as backups and rapidly expressing new genes. This improves longevity and cancer resistance, and reduces the side effects of being subjected to genetic manipulation.</description>
-    <displayCategory>Healing</displayCategory>
+    <displayCategory>BF_MetaGenes</displayCategory>
     <iconPath>GeneIcons/BF_ProfuseGenes</iconPath>
     <canGenerateInGeneSet>true</canGenerateInGeneSet>
     <biostatMet>-1</biostatMet>
@@ -72,4 +72,17 @@
       <li>XenogermLossShock</li>
     </hediffGiversCannotGive>
   </GeneDef>
+
+	<GeneDef>
+		<defName>BF_XenoCarrier</defName>
+		<label>xeno carrier</label>
+		<description>Carriers of this gene do not express xenogenes. Xenogerms can be installed on them, but will have no effect.</description>
+		<displayCategory>BF_MetaGenes</displayCategory>
+		<iconPath>GeneIcons/BF_XenoCarrier</iconPath>
+		<biostatMet>0</biostatMet>
+		<biostatCpx>1</biostatCpx>
+		<customEffectDescriptions>
+			<li>Disables all xenogenes</li>
+		</customEffectDescriptions>
+	</GeneDef>
 </Defs>

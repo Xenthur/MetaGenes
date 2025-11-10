@@ -10,6 +10,5 @@
   <LetterLabelGenesExtracted>Genes extracted</LetterLabelGenesExtracted>
   <LetterTextGenesExtractedBase>{RECIPIENT_nameDef} has extracted a copy of {SOURCE_nameDef}'s genes and implanted {RECIPIENT_objective}self with a xenogerm containing those genes.</LetterTextGenesExtractedBase>
   <LetterTextGenesExtractedEnd> This process takes time. If {SOURCE_nameDef} has {SOURCE_possessive} genes extracted again before {SOURCE_possessive} genes have regrown, {SOURCE_pronoun} will die.</LetterTextGenesExtractedEnd>
-	//fte
 
 </LanguageData>
