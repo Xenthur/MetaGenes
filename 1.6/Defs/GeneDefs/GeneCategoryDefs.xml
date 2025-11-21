@@ -2,12 +2,12 @@
   <GeneCategoryDef>
     <defName>BF_MetaGenes</defName>
     <label>MetaGenes</label>
-    <displayPriorityInXenotype>1301</displayPriorityInXenotype>
+    <displayPriorityInXenotype>-100</displayPriorityInXenotype>
   </GeneCategoryDef>
 
 	<GeneCategoryDef>
 		<defName>BF_GainXenotype</defName>
 		<label>Xenotype</label>
-		<displayPriorityInXenotype>1302</displayPriorityInXenotype>
+		<displayPriorityInXenotype>-101</displayPriorityInXenotype>
 	</GeneCategoryDef>
 </Defs>

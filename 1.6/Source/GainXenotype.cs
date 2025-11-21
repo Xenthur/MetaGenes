@@ -110,7 +110,6 @@ namespace MetaGenes
     [HarmonyPostfix]
     public static void ImpliedGeneDefs_Postfix(ref IEnumerable<GeneDef> __result)
     {
-      Log.Warning("Ping!");
       var resultList = __result.ToList();
 
       foreach (var geneDef in GenerateXenotypeGenes())
@@ -187,7 +186,6 @@ namespace MetaGenes
 
     public static GeneDef GenerateGainXenotypeGene(XenotypeDef xenoDef, GeneTemplate template, DefModExtension extension)
     {
-      // Validate so nothing is null.
       if (xenoDef == null || template == null || extension == null)
       {
         Log.Error($"MetaGenes DefGen: GenerateXenotypeGene: One of the parameters was null." +
@@ -196,7 +194,6 @@ namespace MetaGenes
       }
 
       string defName = $"{xenoDef.defName}_{template.keyTag}";
-      Log.Warning(String.Format(template.label, xenoDef.label));
 
       var geneDef = new GeneDef
       {

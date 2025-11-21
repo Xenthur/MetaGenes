@@ -2,6 +2,8 @@
 <LanguageData>
   
   <MessageCannotExtractFromTempFactionMembers>Cannot extract from temporary faction members.</MessageCannotExtractFromTempFactionMembers>
-  <!-- <MessagePawnHasNoXenogenes>{0_labelShort} has no available genes to extract.</MessagePawnHasNoXenogenes> -->
+	
+	<GainedRandomGene>{SUBJECT_nameDef} has spontaneously developed the {GENES} gene{PLURAL}.</GainedRandomGene>
+	<LostRandomGene>{SUBJECT_nameDef} has spontaneously lost the {GENES} gene{PLURAL}.</LostRandomGene>
 
 </LanguageData>

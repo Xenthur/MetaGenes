@@ -6,7 +6,7 @@
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
-  <description>Genes that mess around with genes! This mod adds various Xenotype-altering genes. Some genes add random genes on spawn, or even entire Xenotypes, letting you populate your world with hybrids such as Pigskin Hussars or Impid Highmates. Others let a pawn copy a Xenotype onto themself, become resistant to gene loss, or even disable their Xenogerm altogether.</description>
+  <description>Genes that mess around with genes! This mod adds various Xenotype-altering genes. Some genes add random genes on spawn, or even entire Xenotypes, letting you populate your world with hybrids such as Neanderthal Hussars or Dirtmole Genies. Others let a pawn copy a Xenotype onto themself, become resistant to gene loss, or even disable their Xenogerm altogether.</description>
   <modDependencies>
     <li>
       <packageId>Ludeon.RimWorld.Biotech</packageId>
@@ -18,15 +18,11 @@
       <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
       <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
     </li>
-		<li>
-			<packageId>RedMattis.BetterPrerequisites</packageId>
-			<displayName>Big and Small - Framework</displayName>
-			<steamWorkshopUrl>steam://url/CommunityFilePage/2925432336</steamWorkshopUrl>
-		</li>
   </modDependencies>
   <loadAfter>
     <li>Ludeon.RimWorld.Biotech</li>
     <li>brrainz.harmony</li>
 		<li>RedMattis.BetterPrerequisites</li>
-  </loadAfter>
+		<li>RedMattis.BigSmall.Core</li>
+	</loadAfter>
 </ModMetaData>

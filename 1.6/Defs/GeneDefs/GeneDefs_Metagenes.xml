@@ -42,9 +42,10 @@
       <li Class="MetaGenes.CompPropertiesExtractXenogerm">
         <genesToRetain>
           <li>BF_Extract</li>
-          <!-- <li>BS_Xenolocked</li>
-          <li>BS_Incorporate</li>
-          <li>BS_IntegrateGenes</li> -->
+					<li MayRequire="RedMattis.BigSmall.Core">BS_Xenolocked</li>
+					<li MayRequire="RedMattis.BigSmall.Core">BS_Incorporate</li>
+					<li MayRequire="RedMattis.BigSmall.Core">BS_IntegrateGenes</li>
+					<li MayRequire="RedMattis.BigSmall.Core">BS_DisintegrateXenoGenes</li>
         </genesToRetain>
       </li>
     </comps>
@@ -96,7 +97,7 @@
 		<biostatCpx>1</biostatCpx>
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<modExtensions>
-			<li Class="MetaGenes.GrabBagExtension">
+			<li Class="MetaGenes.RandomGeneExtension">
 				<isXeno>false</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>
@@ -120,18 +121,78 @@
 		<biostatCpx>1</biostatCpx>
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<modExtensions>
-			<li Class="MetaGenes.GrabBagExtension">
+			<li Class="MetaGenes.RandomGeneExtension">
 				<isXeno>true</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>
 					<li>BF_XenoGrabBag</li>
-					<li MayRequire="RedMattis.BetterPrerequisites">Body_FemaleOnly</li>
-					<li MayRequire="RedMattis.BetterPrerequisites">Body_MaleOnly</li>
 				</excludedGenes>
 			</li>
 		</modExtensions>
 		<customEffectDescriptions>
 			<li>Adds 1-10 randomized non-archite xenogenes, then vanishes</li>
+		</customEffectDescriptions>
+	</GeneDef>
+
+	<GeneDef>
+		<defName>BF_Kaleidoscopic</defName>
+		<exclusionTags>
+			<li>Kaleidoscopic</li>
+		</exclusionTags>
+		<geneClass>MetaGenes.KaleidoscopicGene</geneClass>
+		<label>kaleidoscopic</label>
+		<description>Carriers of this gene have an unstable, rapidly mutating genome. They periodically gain or lose a randomized non-archite xenogene.</description>
+		<displayCategory>BF_MetaGenes</displayCategory>
+		<iconPath>GeneIcons/BF_Kaleidoscopic</iconPath>
+		<biostatMet>0</biostatMet>
+		<biostatCpx>1</biostatCpx>
+		<modExtensions>
+			<li Class="MetaGenes.KaleidoscopicExtension">
+				<isXeno>true</isXeno>
+				<excludedGenes>
+					<li>BF_EndoGrabBag</li>
+					<li>BF_XenoGrabBag</li>
+					<li>BF_Kaleidoscopic</li>
+					<li>BF_Super_Kaleidoscopic</li>
+				</excludedGenes>
+				<geneCount>1</geneCount>
+				<mtbDays>5</mtbDays>
+			</li>
+		</modExtensions>
+		<customEffectDescriptions>
+			<li>Adds or removes a randomized non-archite xenogene roughly every 5 days</li>
+		</customEffectDescriptions>
+	</GeneDef>
+
+	<GeneDef>
+		<defName>BF_Super_Kaleidoscopic</defName>
+		<exclusionTags>
+			<li>Kaleidoscopic</li>
+		</exclusionTags>
+		<geneClass>MetaGenes.KaleidoscopicGene</geneClass>
+		<label>super kaleidoscopic</label>
+		<description>Carriers of this gene have an extremely unstable, perpetually mutating genome. They frequently gain or lose randomized non-archite xenogenes. This gene exists for the memes and is probably not suitable for normal play.</description>
+		<displayCategory>BF_MetaGenes</displayCategory>
+		<iconPath>GeneIcons/BF_Super_Kaleidoscopic</iconPath>
+		<biostatMet>0</biostatMet>
+		<biostatCpx>1</biostatCpx>
+		<biostatArc>1</biostatArc>
+		<canGenerateInGeneSet>false</canGenerateInGeneSet>
+		<modExtensions>
+			<li Class="MetaGenes.KaleidoscopicExtension">
+				<isXeno>true</isXeno>
+				<excludedGenes>
+					<li>BF_EndoGrabBag</li>
+					<li>BF_XenoGrabBag</li>
+					<li>BF_Kaleidoscopic</li>
+					<li>BF_Super_Kaleidoscopic</li>
+				</excludedGenes>
+				<geneCount>1~5</geneCount>
+				<mtbDays>0.2</mtbDays>
+			</li>
+		</modExtensions>
+		<customEffectDescriptions>
+			<li>Adds or removes 1-5 randomized non-archite xenogenes roughly 5 times a day</li>
 		</customEffectDescriptions>
 	</GeneDef>
 </Defs>
