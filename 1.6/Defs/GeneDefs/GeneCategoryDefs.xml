@@ -4,4 +4,10 @@
     <label>MetaGenes</label>
     <displayPriorityInXenotype>1301</displayPriorityInXenotype>
   </GeneCategoryDef>
+
+	<GeneCategoryDef>
+		<defName>BF_GainXenotype</defName>
+		<label>Xenotype</label>
+		<displayPriorityInXenotype>1302</displayPriorityInXenotype>
+	</GeneCategoryDef>
 </Defs>

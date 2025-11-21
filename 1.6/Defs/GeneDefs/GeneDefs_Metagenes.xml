@@ -5,7 +5,6 @@
     <description>Carriers of this gene can extract a copy of all of another person's genes through a somewhat gross-looking proboscis organ and integrate them as a new xenogerm. The target's genetic material will then regrow very slowly. If they extract while the target's genes are regrowing, the target will die.</description>
     <displayCategory>Archite</displayCategory>
     <iconPath>GeneIcons/BF_GeneExtractor</iconPath>
-    <canGenerateInGeneSet>true</canGenerateInGeneSet>
     <biostatMet>0</biostatMet>
     <biostatCpx>3</biostatCpx>
     <biostatArc>1</biostatArc>
@@ -57,7 +56,6 @@
     <description>Carriers have enhanced genetic replication and transcription mechanisms, producing extra copies of their genes as backups and rapidly expressing new genes. This improves longevity and cancer resistance, and reduces the side effects of being subjected to genetic manipulation.</description>
     <displayCategory>BF_MetaGenes</displayCategory>
     <iconPath>GeneIcons/BF_ProfuseGenes</iconPath>
-    <canGenerateInGeneSet>true</canGenerateInGeneSet>
     <biostatMet>-1</biostatMet>
     <biostatCpx>2</biostatCpx>
     <statFactors>
@@ -81,8 +79,59 @@
 		<iconPath>GeneIcons/BF_XenoCarrier</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>
+		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<customEffectDescriptions>
 			<li>Disables all xenogenes</li>
+		</customEffectDescriptions>
+	</GeneDef>
+
+	<GeneDef>
+		<defName>BF_EndoGrabBag</defName>
+		<geneClass>MetaGenes.GrabBagGene</geneClass>
+		<label>endogene grab bag</label>
+		<description>Carriers of this gene gain 1-10 randomized non-archite endogenes, after which this gene is removed. You shouldn't ever see this gene in-game.</description>
+		<displayCategory>BF_MetaGenes</displayCategory>
+		<iconPath>GeneIcons/BF_EndoGrabBag</iconPath>
+		<biostatMet>0</biostatMet>
+		<biostatCpx>1</biostatCpx>
+		<canGenerateInGeneSet>false</canGenerateInGeneSet>
+		<modExtensions>
+			<li Class="MetaGenes.GrabBagExtension">
+				<isXeno>false</isXeno>
+				<excludedGenes>
+					<li>BF_EndoGrabBag</li>
+					<li>BF_XenoGrabBag</li>
+				</excludedGenes>
+			</li>
+		</modExtensions>
+		<customEffectDescriptions>
+			<li>Adds 1-10 randomized non-archite endogenes, then vanishes</li>
+		</customEffectDescriptions>
+	</GeneDef>
+
+	<GeneDef>
+		<defName>BF_XenoGrabBag</defName>
+		<geneClass>MetaGenes.GrabBagGene</geneClass>
+		<label>xenogene grab bag</label>
+		<description>Carriers of this gene gain 1-10 randomized non-archite xenogenes, after which this gene is removed. You shouldn't ever see this gene in-game.</description>
+		<displayCategory>BF_MetaGenes</displayCategory>
+		<iconPath>GeneIcons/BF_XenoGrabBag</iconPath>
+		<biostatMet>0</biostatMet>
+		<biostatCpx>1</biostatCpx>
+		<canGenerateInGeneSet>false</canGenerateInGeneSet>
+		<modExtensions>
+			<li Class="MetaGenes.GrabBagExtension">
+				<isXeno>true</isXeno>
+				<excludedGenes>
+					<li>BF_EndoGrabBag</li>
+					<li>BF_XenoGrabBag</li>
+					<li MayRequire="RedMattis.BetterPrerequisites">Body_FemaleOnly</li>
+					<li MayRequire="RedMattis.BetterPrerequisites">Body_MaleOnly</li>
+				</excludedGenes>
+			</li>
+		</modExtensions>
+		<customEffectDescriptions>
+			<li>Adds 1-10 randomized non-archite xenogenes, then vanishes</li>
 		</customEffectDescriptions>
 	</GeneDef>
 </Defs>

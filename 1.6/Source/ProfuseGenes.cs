@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -167,8 +166,7 @@ namespace MetaGenes
 
     public static bool HasProfuseGenes(this Pawn pawn)
     {
-      return pawn.genes.GetGene(DefDatabase<GeneDef>.GetNamedSilentFail("BF_ProfuseGenes")) != null;
+      return pawn.genes.HasActiveGene(DefDatabase<GeneDef>.GetNamedSilentFail("BF_ProfuseGenes"));
     }
-
   }
 }

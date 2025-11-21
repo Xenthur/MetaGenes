@@ -8,12 +8,19 @@ using HarmonyLib;
 namespace MetaGenes
 {
   [StaticConstructorOnStartup]
-  public static class MetaGenes
+  //public static class MetaGenes
+  internal class MetaGenes : Mod
   {
-    private static Harmony harmony = new Harmony("Xenthur.MetaGenes");
-    static MetaGenes()
+    //private static readonly Harmony harmony = new("Xenthur.MetaGenes");
+
+    public MetaGenes(ModContentPack content) : base(content)
     {
+      Harmony harmony = new("Xenthur.MetaGenes");
       harmony.PatchAll();
     }
+    //static MetaGenes()
+    //{
+    //  harmony.PatchAll();
+    //}
   }
 }

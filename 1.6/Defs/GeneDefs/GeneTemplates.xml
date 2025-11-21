@@ -1,0 +1,15 @@
+<Defs>
+	<MetaGenes.GeneTemplate>
+		<defName>BF_GainXenotypeTemplate</defName>
+		<label>gain {0} xenotype</label>
+		<keyTag>GainXenotype</keyTag>
+		<description>Carriers of this gene gain the {0} {1} xenotype, replacing all of their {2}, after which this gene is removed. If multiple {1} xenotype genes are present, one is randomly chosen. You shouldn't ever see this gene in-game.</description>
+		<customEffectDescriptions>
+			<li>Adds {0} {1} xenotype, then vanishes</li>
+		</customEffectDescriptions>
+		<displayCategory>BF_GainXenotype</displayCategory>
+		<canGenerateInGeneSet>false</canGenerateInGeneSet>
+		<selectionWeight>0</selectionWeight>
+		<ignoreIllegalLabelCharacterConfigError>true</ignoreIllegalLabelCharacterConfigError>
+	</MetaGenes.GeneTemplate>
+</Defs>

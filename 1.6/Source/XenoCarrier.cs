@@ -1,12 +1,8 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace MetaGenes
@@ -14,8 +10,7 @@ namespace MetaGenes
   [HarmonyPatch]
   public static class XenoCarrierPatch1
   {
-    [HarmonyTargetMethods]
-    public static IEnumerable<MethodBase> PatchInventoryMethods()
+    public static IEnumerable<MethodBase> TargetMethods()
     {
       yield return AccessTools.Method(typeof(Pawn_GeneTracker), "Notify_GenesChanged");
       yield return AccessTools.Method(typeof(Pawn_GeneTracker), "OverrideAllConflicting");
@@ -83,7 +78,7 @@ namespace MetaGenes
       {
         foreach (Gene gene in genes.Xenogenes)
         {
-          if (gene != xenoCarrierGene)
+          if (gene != xenoCarrierGene && gene.def.geneClass != typeof(GainXenotypeGene) && gene.def.geneClass != typeof(GrabBagGene))
           {
             gene.OverrideBy(xenoCarrierGene);
           }
