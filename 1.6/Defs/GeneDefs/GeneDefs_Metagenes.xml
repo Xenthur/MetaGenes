@@ -172,7 +172,7 @@
 		<geneClass>MetaGenes.KaleidoscopicGene</geneClass>
 		<label>super kaleidoscopic</label>
 		<description>Carriers of this gene have an extremely unstable, perpetually mutating genome. They frequently gain or lose randomized non-archite xenogenes. This gene exists for the memes and is probably not suitable for normal play.</description>
-		<displayCategory>BF_MetaGenes</displayCategory>
+		<displayCategory>Archite</displayCategory>
 		<iconPath>GeneIcons/BF_Super_Kaleidoscopic</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>

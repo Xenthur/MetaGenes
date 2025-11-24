@@ -6,7 +6,7 @@
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>
-  <description>Genes that mess around with genes! This mod adds various Xenotype-altering genes. Some genes add random genes on spawn, or even entire Xenotypes, letting you populate your world with hybrids such as Neanderthal Hussars or Dirtmole Genies. Others let a pawn copy a Xenotype onto themself, become resistant to gene loss, or even disable their Xenogerm altogether.</description>
+  <description>This mod adds various xenotype-altering genes, opening new possibilities for xenotype creation. Some genes add random genes on spawn, or even entire Xenotypes, letting you populate your world with hybrids such as Neanderthal Hussars or Dirtmole Genies. Others let a pawn copy a Xenotype onto themself, become resistant to gene loss, or even disable their Xenogerm altogether.</description>
   <modDependencies>
     <li>
       <packageId>Ludeon.RimWorld.Biotech</packageId>

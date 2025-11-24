@@ -198,7 +198,7 @@ namespace MetaGenes
       var geneDef = new GeneDef
       {
         defName = defName,
-        label = String.Format(template.label, xenoDef.label),
+        label = String.Format(template.label, xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm"),
         description = String.Format(template.description, xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm", xenoDef.inheritable ? "endogenes" : "xenogenes"),
         customEffectDescriptions = [String.Format(template.customEffectDescriptions[0], xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm")],
         iconPath = xenoDef.iconPath,
