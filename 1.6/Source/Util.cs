@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Verse;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   public static class Util
   {
@@ -33,6 +33,11 @@ namespace MetaGenes
       }
 
       return geneMessage;
+    }
+
+    public static bool IsGermline(this XenotypeDef xenotype)
+    {
+      return xenotype.inheritable || xenotype == XenotypeDefOf.Baseliner;
     }
   }
 

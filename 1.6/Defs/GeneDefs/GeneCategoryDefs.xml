@@ -1,7 +1,7 @@
 <Defs>
   <GeneCategoryDef>
-    <defName>BF_MetaGenes</defName>
-    <label>MetaGenes</label>
+    <defName>BF_XenotypePlusPlus</defName>
+    <label>Xenotype++</label>
     <displayPriorityInXenotype>-100</displayPriorityInXenotype>
   </GeneCategoryDef>
 

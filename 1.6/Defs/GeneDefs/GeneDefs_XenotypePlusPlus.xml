@@ -39,7 +39,7 @@
       </targetParams>
     </verbProperties>
     <comps>
-      <li Class="MetaGenes.CompPropertiesExtractXenogerm">
+      <li Class="XenotypePlusPlus.CompPropertiesExtractXenogerm">
         <genesToRetain>
           <li>BF_Extract</li>
 					<li MayRequire="RedMattis.BigSmall.Core">BS_Xenolocked</li>
@@ -55,7 +55,7 @@
     <defName>BF_ProfuseGenes</defName>
     <label>profuse genes</label>
     <description>Carriers have enhanced genetic replication and transcription mechanisms, producing extra copies of their genes as backups and rapidly expressing new genes. This improves longevity and cancer resistance, and reduces the side effects of being subjected to genetic manipulation.</description>
-    <displayCategory>BF_MetaGenes</displayCategory>
+    <displayCategory>BF_XenotypePlusPlus</displayCategory>
     <iconPath>GeneIcons/BF_ProfuseGenes</iconPath>
     <biostatMet>-1</biostatMet>
     <biostatCpx>2</biostatCpx>
@@ -76,7 +76,7 @@
 		<defName>BF_XenoCarrier</defName>
 		<label>xeno carrier</label>
 		<description>Carriers of this gene do not express xenogenes. Xenogerms can be installed on them, but will have no effect.</description>
-		<displayCategory>BF_MetaGenes</displayCategory>
+		<displayCategory>BF_XenotypePlusPlus</displayCategory>
 		<iconPath>GeneIcons/BF_XenoCarrier</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>
@@ -88,16 +88,16 @@
 
 	<GeneDef>
 		<defName>BF_EndoGrabBag</defName>
-		<geneClass>MetaGenes.GrabBagGene</geneClass>
+		<geneClass>XenotypePlusPlus.GrabBagGene</geneClass>
 		<label>endogene grab bag</label>
 		<description>Carriers of this gene gain 1-10 randomized non-archite endogenes, after which this gene is removed. You shouldn't ever see this gene in-game.</description>
-		<displayCategory>BF_MetaGenes</displayCategory>
+		<displayCategory>BF_XenotypePlusPlus</displayCategory>
 		<iconPath>GeneIcons/BF_EndoGrabBag</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<modExtensions>
-			<li Class="MetaGenes.RandomGeneExtension">
+			<li Class="XenotypePlusPlus.RandomGeneExtension">
 				<isXeno>false</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>
@@ -112,16 +112,16 @@
 
 	<GeneDef>
 		<defName>BF_XenoGrabBag</defName>
-		<geneClass>MetaGenes.GrabBagGene</geneClass>
+		<geneClass>XenotypePlusPlus.GrabBagGene</geneClass>
 		<label>xenogene grab bag</label>
 		<description>Carriers of this gene gain 1-10 randomized non-archite xenogenes, after which this gene is removed. You shouldn't ever see this gene in-game.</description>
-		<displayCategory>BF_MetaGenes</displayCategory>
+		<displayCategory>BF_XenotypePlusPlus</displayCategory>
 		<iconPath>GeneIcons/BF_XenoGrabBag</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<modExtensions>
-			<li Class="MetaGenes.RandomGeneExtension">
+			<li Class="XenotypePlusPlus.RandomGeneExtension">
 				<isXeno>true</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>
@@ -139,15 +139,15 @@
 		<exclusionTags>
 			<li>Kaleidoscopic</li>
 		</exclusionTags>
-		<geneClass>MetaGenes.KaleidoscopicGene</geneClass>
+		<geneClass>XenotypePlusPlus.KaleidoscopicGene</geneClass>
 		<label>kaleidoscopic</label>
 		<description>Carriers of this gene have an unstable, rapidly mutating genome. They periodically gain or lose a randomized non-archite xenogene.</description>
-		<displayCategory>BF_MetaGenes</displayCategory>
+		<displayCategory>BF_XenotypePlusPlus</displayCategory>
 		<iconPath>GeneIcons/BF_Kaleidoscopic</iconPath>
 		<biostatMet>0</biostatMet>
 		<biostatCpx>1</biostatCpx>
 		<modExtensions>
-			<li Class="MetaGenes.KaleidoscopicExtension">
+			<li Class="XenotypePlusPlus.KaleidoscopicExtension">
 				<isXeno>true</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>
@@ -169,7 +169,7 @@
 		<exclusionTags>
 			<li>Kaleidoscopic</li>
 		</exclusionTags>
-		<geneClass>MetaGenes.KaleidoscopicGene</geneClass>
+		<geneClass>XenotypePlusPlus.KaleidoscopicGene</geneClass>
 		<label>super kaleidoscopic</label>
 		<description>Carriers of this gene have an extremely unstable, perpetually mutating genome. They frequently gain or lose randomized non-archite xenogenes. This gene exists for the memes and is probably not suitable for normal play.</description>
 		<displayCategory>Archite</displayCategory>
@@ -179,7 +179,7 @@
 		<biostatArc>1</biostatArc>
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<modExtensions>
-			<li Class="MetaGenes.KaleidoscopicExtension">
+			<li Class="XenotypePlusPlus.KaleidoscopicExtension">
 				<isXeno>true</isXeno>
 				<excludedGenes>
 					<li>BF_EndoGrabBag</li>

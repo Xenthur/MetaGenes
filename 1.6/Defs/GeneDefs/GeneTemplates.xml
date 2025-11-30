@@ -1,5 +1,5 @@
 <Defs>
-	<MetaGenes.GeneTemplate>
+	<XenotypePlusPlus.GeneTemplate>
 		<defName>BF_GainXenotypeTemplate</defName>
 		<label>{0} {1}</label>
 		<keyTag>GainXenotype</keyTag>
@@ -11,5 +11,5 @@
 		<canGenerateInGeneSet>false</canGenerateInGeneSet>
 		<selectionWeight>0</selectionWeight>
 		<ignoreIllegalLabelCharacterConfigError>true</ignoreIllegalLabelCharacterConfigError>
-	</MetaGenes.GeneTemplate>
+	</XenotypePlusPlus.GeneTemplate>
 </Defs>

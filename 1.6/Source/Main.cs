@@ -1,14 +1,14 @@
 ﻿using Verse;
 using HarmonyLib;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   [StaticConstructorOnStartup]
-  internal class MetaGenes : Mod
+  internal class XenotypePlusPlus : Mod
   {
-    public MetaGenes(ModContentPack content) : base(content)
+    public XenotypePlusPlus(ModContentPack content) : base(content)
     {
-      Harmony harmony = new("Xenthur.MetaGenes");
+      Harmony harmony = new("Xenthur.XenotypePlusPlus");
       harmony.PatchAll();
     }
   }

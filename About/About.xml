@@ -2,7 +2,7 @@
 <ModMetaData>
   <name>Xenotype++</name>
   <author>Xenthur</author>
-  <packageId>xenthur.metaGenes</packageId>
+  <packageId>xenthur.xenotypePlusPlus</packageId>
   <supportedVersions>
     <li>1.6</li>
   </supportedVersions>

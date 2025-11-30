@@ -1,0 +1,19 @@
+﻿<Patch>
+	<Operation Class="PatchOperationConditional">
+		<xpath>/Defs/ThingDef[@Name="Human"]/comps</xpath>
+		<nomatch Class="PatchOperationAdd">
+			<xpath>/Defs/ThingDef[@Name="Human"]</xpath>
+			<value>
+				<comps>
+					<li Class="XenotypePlusPlus.GermlineCompProperties"/>
+				</comps>
+			</value>
+		</nomatch>
+		<match Class="PatchOperationAdd">
+			<xpath>/Defs/ThingDef[@Name="Human"]/comps</xpath>
+			<value>
+				<li Class="XenotypePlusPlus.GermlineCompProperties"/>
+			</value>
+		</match>
+	</Operation>
+</Patch>

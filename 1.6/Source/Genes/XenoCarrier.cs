@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   [HarmonyPatch]
   public static class XenoCarrierPatch1

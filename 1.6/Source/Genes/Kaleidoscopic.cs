@@ -1,6 +1,6 @@
 ﻿using Verse;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   public class KaleidoscopicGene : RandomGeneGene
   {

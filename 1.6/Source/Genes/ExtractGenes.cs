@@ -5,7 +5,7 @@ using UnityEngine;
 using Verse;
 using Verse.Sound;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   public class CompPropertiesExtractXenogerm : CompProperties_AbilityEffect
   {
@@ -18,8 +18,6 @@ namespace MetaGenes
 
   public class CompAbilityExtractXenogerm : CompAbilityEffect
   {
-    private static readonly CachedTexture ReimplantIcon = new CachedTexture("GeneIcons/BF_GeneExtractor");
-
     private new CompPropertiesExtractXenogerm Props => (CompPropertiesExtractXenogerm)props;
 
     public override void Apply(LocalTargetInfo target, LocalTargetInfo dest)

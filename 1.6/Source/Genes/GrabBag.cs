@@ -1,4 +1,4 @@
-﻿namespace MetaGenes
+﻿namespace XenotypePlusPlus
 {
   public class GrabBagGene : RandomGeneGene
   {

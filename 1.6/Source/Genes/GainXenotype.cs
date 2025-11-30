@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 
-namespace MetaGenes
+namespace XenotypePlusPlus
 {
   [HarmonyPatch]
   public static class GainXenotypePatch
@@ -27,22 +27,28 @@ namespace MetaGenes
         return;
       }
       Pawn_GeneTracker genes = __instance.genes;
-      List<XenotypeDef> germlines = [.. genes.GenesListForReading.Where((g) => g is GainXenotypeGene xg && xg.GetGeneXenotype().inheritable).Select((g) => ((GainXenotypeGene)g).GetGeneXenotype())];
-      List<XenotypeDef> xenogerms = [.. genes.GenesListForReading.Where((g) => g is GainXenotypeGene xg && !xg.GetGeneXenotype().inheritable).Select((g) => ((GainXenotypeGene)g).GetGeneXenotype())];
+      List<XenotypeDef> germlines = [.. genes.GenesListForReading.Where((g) => g is GainXenotypeGene xg && xg.GetGeneXenotype().IsGermline()).Select((g) => ((GainXenotypeGene)g).GetGeneXenotype())];
+      List<XenotypeDef> xenogerms = [.. genes.GenesListForReading.Where((g) => g is GainXenotypeGene xg && !xg.GetGeneXenotype().IsGermline()).Select((g) => ((GainXenotypeGene)g).GetGeneXenotype())];
       XenotypeDef currentXenotype = genes.Xenotype;
 
       if (!germlines.Empty())
       {
         XenotypeDef selectedGermline = germlines.RandomElement();
-        if (currentXenotype.defName == "Baseliner" || currentXenotype.inheritable)
+        if (currentXenotype.IsGermline())
         {
           genes.SetXenotypeDirect(selectedGermline);
           genes.iconDef = null;
         }
+        else
+        {
+          genes.pawn.GetComp<GermlineComp>().SetGermline(selectedGermline);
+        }
+
         GeneDef currentHairGene = genes.GetHairColorGene();
+        GeneDef currentMelaninGene = genes.GetMelaninGene();
         for (int num = genes.Endogenes.Count - 1; num >= 0; num--)
         {
-          if (genes.Endogenes[num].def != genes.GetMelaninGene())
+          if (genes.Endogenes[num].def != currentMelaninGene)
           {
             genes.RemoveGene(genes.Endogenes[num]);
           }
@@ -58,6 +64,14 @@ namespace MetaGenes
           if (currentHairGene != null)
           {
             genes.AddGene(currentHairGene, xenogene: false);
+          }
+        }
+        if (!genes.Endogenes.ContainsAny((Gene g) => g.def.skinColorOverride.HasValue) && !genes.Endogenes.ContainsAny((Gene g) => g.def.skinIsHairColor) && currentMelaninGene == null)
+        {
+          GeneDef newMelaninGene = PawnSkinColors.RandomSkinColorGene(__instance);
+          if (newMelaninGene != null)
+          {
+            genes.AddGene(newMelaninGene, xenogene: false);
           }
         }
       }
@@ -94,9 +108,14 @@ namespace MetaGenes
 
   }
 
-  public class GainXenotypeExtension : DefModExtension
+  public class GainXenotypeExtension(XenotypeDef xenotype) : DefModExtension
   {
-    public XenotypeDef xenotype = DefDatabase<XenotypeDef>.GetNamedSilentFail("Hussar");
+    public XenotypeDef xenotype = xenotype;
+
+    public GainXenotypeExtension() : this(XenotypeDefOf.Baseliner)
+    {
+
+    }
   }
 
   [HarmonyPatch]
@@ -128,43 +147,39 @@ namespace MetaGenes
       var gainTemplate = DefDatabase<GeneTemplate>.GetNamed("BF_GainXenotypeTemplate");
       if (gainTemplate == null)
       {
-        Log.Warning("MetaGenes DefGen: GenerateXenotypeGenes: Could not find the Gain Xenotype Template. Gain Xenotype genes will not be generated.");
+        Log.Warning("XenotypePlusPlus DefGen: GenerateXenotypeGenes: Could not find the Gain Xenotype Template. Gain Xenotype genes will not be generated.");
       }
-
-      try
+      else
       {
-        foreach (var xeno in allXenotypes)
+        try
         {
-          if (gainTemplate != null)
+          foreach (var xeno in allXenotypes)
           {
-            var geneExt = new GainXenotypeExtension
-            {
-              xenotype = xeno
-            };
-
-            result.Add(GenerateGainXenotypeGene(xeno, gainTemplate, geneExt));
+            result.Add(GenerateGainXenotypeGene(xeno, gainTemplate));
           }
+
+        }
+        catch (Exception e)
+        {
+          Log.Error($"Exception duing XenotypePlusPlus DefGen: GenerateXenotypeGenes.\nGenerating the genes has been aborted.\n{e.Message}\n{e.StackTrace}");
         }
       }
-      catch (Exception e)
-      {
-        Log.Error($"Exception duing MetaGenes DefGen: GenerateXenotypeGenes.\nGenerating the genes has been aborted.\n{e.Message}\n{e.StackTrace}");
-      }
+
 
       return result;
     }
 
     [HarmonyPatch(typeof(GeneUIUtility), "DrawGeneBasics")]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+    public static IEnumerable<CodeInstruction> DrawGainXenotype(IEnumerable<CodeInstruction> instructions)
     {
       bool backgroundPatched = false;
-      List<CodeInstruction> codes = instructions.ToList();
-      for (int idx = 1; idx < codes.Count; idx++)
+      List<CodeInstruction> codes = [.. instructions];
+      for (int i = 1; i < codes.Count; i++)
       {
-        bool runBackgroundPatch = !backgroundPatched && idx > 3 && idx < codes.Count - 2 &&
-           codes[idx].IsLdloc() && codes[idx].operand is LocalBuilder lb && lb.LocalIndex == 4 &&
-           (codes[idx + 1].opcode == OpCodes.Callvirt && codes[idx + 1].OperandIs(typeof(CachedTexture).GetMethod("get_Texture")));
+        bool runBackgroundPatch = !backgroundPatched && i > 3 && i < codes.Count - 2 &&
+           codes[i].IsLdloc() && codes[i].operand is LocalBuilder lb && lb.LocalIndex == 4 &&
+           (codes[i + 1].opcode == OpCodes.Callvirt && codes[i + 1].OperandIs(typeof(CachedTexture).GetMethod("get_Texture")));
 
         if (runBackgroundPatch)
         {
@@ -176,7 +191,7 @@ namespace MetaGenes
             new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(GainXenotypeDefGenerator), nameof(GetXenotypeGeneBackground))),
             new CodeInstruction(OpCodes.Stloc_S, 4), // Store cachedTexture
           ];
-          codes.InsertRange(idx, newInstructions);
+          codes.InsertRange(i, newInstructions);
         }
       }
 
@@ -184,30 +199,32 @@ namespace MetaGenes
 
     }
 
-    public static GeneDef GenerateGainXenotypeGene(XenotypeDef xenoDef, GeneTemplate template, DefModExtension extension)
+    public static GeneDef GenerateGainXenotypeGene(XenotypeDef xenoDef, GeneTemplate template)
     {
-      if (xenoDef == null || template == null || extension == null)
+      if (xenoDef == null || template == null)
       {
-        Log.Error($"MetaGenes DefGen: GenerateXenotypeGene: One of the parameters was null." +
-            $"\nXenoDef: {xenoDef}, template: {template}, extension: {extension}");
+        Log.Error($"XenotypePlusPlus DefGen: GenerateXenotypeGene: One of the parameters was null." +
+            $"\nXenoDef: {xenoDef}, template: {template}");
         return null;
       }
 
       string defName = $"{xenoDef.defName}_{template.keyTag}";
+      string xenotypeCat = xenoDef.IsGermline() ? "germline" : "xenogerm";
+      string geneCat = xenoDef.IsGermline() ? "endogenes" : "xenogenes";
 
       var geneDef = new GeneDef
       {
         defName = defName,
-        label = String.Format(template.label, xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm"),
-        description = String.Format(template.description, xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm", xenoDef.inheritable ? "endogenes" : "xenogenes"),
-        customEffectDescriptions = [String.Format(template.customEffectDescriptions[0], xenoDef.label, xenoDef.inheritable ? "germline" : "xenogerm")],
+        label = String.Format(template.label, xenoDef.label, xenotypeCat),
+        description = String.Format(template.description, xenoDef.label, xenotypeCat, geneCat),
+        customEffectDescriptions = [String.Format(template.customEffectDescriptions[0], xenoDef.label, xenotypeCat)],
         iconPath = xenoDef.iconPath,
         biostatCpx = 0,
         biostatMet = 0,
         displayCategory = template.displayCategory,
         canGenerateInGeneSet = template.canGenerateInGeneSet,
         selectionWeight = template.selectionWeight,
-        modExtensions = [extension]
+        modExtensions = [new GainXenotypeExtension(xenoDef)]
       };
 
       return geneDef;
@@ -218,7 +235,7 @@ namespace MetaGenes
       if (gene.geneClass == typeof(GainXenotypeGene))
       {
         var extension = gene.GetModExtension<GainXenotypeExtension>() ?? new GainXenotypeExtension();
-        return extension.xenotype.inheritable ? germline : xenogerm;
+        return extension.xenotype.IsGermline() ? germline : xenogerm;
       }
       return previous;
     }
