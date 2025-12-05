@@ -2,11 +2,13 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 namespace XenotypePlusPlus
 {
@@ -187,7 +189,6 @@ namespace XenotypePlusPlus
       }
     }
 
-
     public GermlineComp Clone()
     {
       return new GermlineComp
@@ -213,7 +214,7 @@ namespace XenotypePlusPlus
       {
         return germlineData.CustomXenotype != pawn.genes.CustomXenotype;
       }
-      return germlineData.Germline != pawn.genes.Xenotype || germlineData.germlineName != pawn.genes.xenotypeName; 
+      return germlineData.Germline != pawn.genes.Xenotype || germlineData.germlineName != pawn.genes.xenotypeName;
     }
 
     [HarmonyPatch(typeof(GeneUIUtility), nameof(GeneUIUtility.DrawGenesInfo))]
@@ -278,21 +279,6 @@ namespace XenotypePlusPlus
 
     }
 
-    [HarmonyPatch(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.SetXenotype))]
-    [HarmonyPatch(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.SetXenotypeDirect))]
-    [HarmonyPostfix]
-    public static void UpdateGermline(Pawn_GeneTracker __instance, XenotypeDef xenotype)
-    {
-      if (xenotype.IsGermline())
-      {
-        __instance.pawn.GetComp<GermlineComp>().SetGermline(xenotype);
-      }
-      else
-      {
-        __instance.pawn.GetComp<GermlineComp>().FindGermline();
-      }
-    }
-
     [HarmonyPatch(typeof(PawnGenerator), "GenerateGenes")]
     [HarmonyPostfix]
     public static void InitCustomXenotype(Pawn pawn, PawnGenerationRequest request)
@@ -318,32 +304,68 @@ namespace XenotypePlusPlus
       }
     }
 
+    public static bool TryNoXenogerm(Pawn_GeneTracker genes, XenotypeDef xenotype)
+    {
+      if (xenotype == XPPDefs.NoXenogerm)
+      {
+        genes.RemoveXenogerm();
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+
     [HarmonyPatch(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.SetXenotype))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> PreserveXenotype(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+    public static IEnumerable<CodeInstruction> PatchSetXenotype(IEnumerable<CodeInstruction> instructions, ILGenerator il)
     {
       var validateMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(KeepXenotype));
+      var germlineMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(UpdateGermline));
+      var tryNoXenogermMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(TryNoXenogerm));
 
       bool flag = false;
       bool flag2 = false;
+      bool flag3 = false;
       Label label = il.DefineLabel();
+      Label label2 = il.DefineLabel();
       List<CodeInstruction> codes = [.. instructions];
       for (int i = 0; i < codes.Count; i++)
       {
-        if (!flag && codes[i].opcode == OpCodes.Ldarg_1)
+        if (!flag && codes[i].opcode == OpCodes.Ldarg_0)
         {
           flag = true;
           yield return codes[i];
+          yield return new CodeInstruction(OpCodes.Ldarg_1);
+          yield return new CodeInstruction(OpCodes.Call, tryNoXenogermMethod);
+          yield return new CodeInstruction(OpCodes.Brfalse, label);
+          yield return new CodeInstruction(OpCodes.Ret);
+          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label);
+          yield return new CodeInstruction(OpCodes.Ldarg_0);
+        }
+        else if (!flag2 && codes[i].opcode == OpCodes.Ldarg_1)
+        {
+          flag2 = true;
+          yield return codes[i];
+          //yield return new CodeInstruction(OpCodes.Call, testMethod);
           yield return new CodeInstruction(OpCodes.Call, validateMethod);
-          yield return new CodeInstruction(OpCodes.Brtrue, label);
+          yield return new CodeInstruction(OpCodes.Brtrue, label2);
           yield return new CodeInstruction(OpCodes.Ldarg_0);
           yield return new CodeInstruction(OpCodes.Ldarg_1);
         }
-        else if (!flag2 && i + 1 < codes.Count && codes[i + 1].opcode == OpCodes.Call && codes[i + 1].operand is MethodInfo methodInfo && methodInfo.Name == nameof(Pawn_GeneTracker.ClearXenogenes))
+        else if (!flag3 && i + 1 < codes.Count && codes[i + 1].opcode == OpCodes.Call && codes[i + 1].operand is MethodInfo methodInfo && methodInfo.Name == nameof(Pawn_GeneTracker.ClearXenogenes))
         {
-          flag2 = true;
-          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label);
+          flag3 = true;
+          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label2);
           yield return codes[i];
+        }
+        else if (codes[i].opcode == OpCodes.Blt_S)
+        {
+          yield return codes[i];
+          yield return new CodeInstruction(OpCodes.Ldarg_0);
+          yield return new CodeInstruction(OpCodes.Ldarg_1);
+          yield return new CodeInstruction(OpCodes.Call, germlineMethod);
         }
         else
         {
@@ -354,35 +376,81 @@ namespace XenotypePlusPlus
 
     [HarmonyPatch(typeof(Pawn_GeneTracker), nameof(Pawn_GeneTracker.SetXenotypeDirect))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> PreserveXenotypeDirect(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+    public static IEnumerable<CodeInstruction> PatchSetXenotypeDirect(IEnumerable<CodeInstruction> instructions, ILGenerator il)
     {
       var validateMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(KeepXenotype));
+      var germlineMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(UpdateGermline));
+      var tryNoXenogermMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(TryNoXenogerm));
 
       bool flag = false;
       bool flag2 = false;
       Label label = il.DefineLabel();
+      Label label2 = il.DefineLabel();
       List<CodeInstruction> codes = [.. instructions];
+      int flag3 = 0;
+
       for (int i = 0; i < codes.Count; i++)
       {
-        if (!flag && codes[i].opcode == OpCodes.Ldarg_1)
+        if (!flag && codes[i].opcode == OpCodes.Ldarg_0)
+        {
+          flag = true;
+          yield return new CodeInstruction(OpCodes.Ldarg_0);
+          yield return new CodeInstruction(OpCodes.Ldarg_1);
+          yield return new CodeInstruction(OpCodes.Call, tryNoXenogermMethod);
+          yield return new CodeInstruction(OpCodes.Brfalse, label);
+          yield return new CodeInstruction(OpCodes.Ret);
+          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label);
+          yield return codes[i];
+        }
+        else if (!flag && codes[i].opcode == OpCodes.Ldarg_1)
         {
           flag = true;
           yield return codes[i];
           yield return new CodeInstruction(OpCodes.Call, validateMethod);
-          yield return new CodeInstruction(OpCodes.Brtrue, label);
+          yield return new CodeInstruction(OpCodes.Brtrue, label2);
           yield return new CodeInstruction(OpCodes.Ldarg_0);
           yield return new CodeInstruction(OpCodes.Ldarg_1);
         }
         else if (!flag2 && codes[i].opcode == OpCodes.Ret)
         {
           flag2 = true;
-          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label);
+          yield return new CodeInstruction(OpCodes.Nop).WithLabels(label2);
           yield return codes[i];
+        }
+        else if (codes[i].opcode == OpCodes.Stfld)
+        {
+          yield return codes[i];
+          flag3++;
+          if (flag3 == 3)
+          {
+            yield return new CodeInstruction(OpCodes.Ldarg_0);
+            yield return new CodeInstruction(OpCodes.Ldarg_1);
+            yield return new CodeInstruction(OpCodes.Call, germlineMethod);
+          }
         }
         else
         {
           yield return codes[i];
         }
+      }
+
+    }
+
+    public static void UpdateGermline(Pawn_GeneTracker __instance, XenotypeDef xenotype)
+    {
+      GermlineComp germlineData = __instance.pawn.GetComp<GermlineComp>();
+      if (germlineData == null)
+      {
+        return;
+      }
+
+      if (xenotype.IsGermline())
+      {
+        germlineData.SetGermline(xenotype);
+      }
+      else
+      {
+        germlineData.FindGermline();
       }
     }
 
@@ -473,7 +541,7 @@ namespace XenotypePlusPlus
       {
         return;
       }
-      
+
       if (!__instance.PreferredXenotypes.Any() && !__instance.PreferredCustomXenotypes.Any())
       {
         return;
@@ -488,6 +556,387 @@ namespace XenotypePlusPlus
         __result = __instance.PreferredCustomXenotypes.Contains(germlineData.CustomXenotype);
       }
       __result = __result || __instance.PreferredXenotypes.Contains(germlineData.Germline);
+    }
+
+    [HarmonyPatch(typeof(CharacterCardUtility), nameof(CharacterCardUtility.DrawCharacterCard))]
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> ExpandRandomizedButton(IEnumerable<CodeInstruction> instructions)
+    {
+      bool flag = false;
+      int flag2 = 0;
+      List<CodeInstruction> codes = [.. instructions];
+      for (int i = 0; i < codes.Count; i++)
+      {
+        if (codes[i].opcode == OpCodes.Ldloca_S && codes[i].LocalIndex() == 18)
+        {
+          flag = true;
+        }
+        else if (flag && flag2 < 2 && codes[i].opcode == OpCodes.Ldc_R4 && codes[i].operand is float num && num == 200f)
+        {
+          codes[i] = new CodeInstruction(OpCodes.Ldc_R4, 302f);
+          flag2++;
+        }
+      }
+
+      return codes;
+    }
+
+    private static List<XenotypeDef> forcedXenogerms = [];
+    private static List<CustomXenotype> forcedCustomXenogerms = [];
+    private static List<List<XenotypeDef>> allowedXenogerms = [];
+
+    // Temp variables to account for warnedChangingXenotypeWillRandomizePawn
+    private static List<XenotypeDef> newForcedXenogerms = [];
+    private static List<CustomXenotype> newForcedCustomXenogerms = [];
+    private static List<List<XenotypeDef>> newAllowedXenogerms = [];
+
+    private static Texture2D GetXenotypeIcon(int startingPawnIndex)
+    {
+      if (forcedXenogerms[startingPawnIndex] != null)
+      {
+        return forcedXenogerms[startingPawnIndex].Icon;
+      }
+      if (forcedCustomXenogerms[startingPawnIndex] != null)
+      {
+        return forcedCustomXenogerms[startingPawnIndex].IconDef.Icon;
+      }
+      if (allowedXenogerms[startingPawnIndex] != null)
+      {
+        return GeneUtility.UniqueXenotypeTex.Texture;
+      }
+      return XPPDefs.NoXenogerm.Icon;
+    }
+
+    private static string GetXenotypeLabel(int startingPawnIndex)
+    {
+      if (forcedXenogerms[startingPawnIndex] != null)
+      {
+        return forcedXenogerms[startingPawnIndex].LabelCap;
+      }
+      if (forcedCustomXenogerms[startingPawnIndex] != null)
+      {
+        return forcedCustomXenogerms[startingPawnIndex].name.CapitalizeFirst();
+      }
+      if (allowedXenogerms[startingPawnIndex] != null)
+      {
+        return "AnyLower".Translate().CapitalizeFirst();
+      }
+      return "NoXenogerm".Translate().CapitalizeFirst();
+    }
+
+    public static IEnumerable<XenotypeDef> GermlineXenotypes(IEnumerable<XenotypeDef> xenotypes)
+    {
+      return xenotypes.Where((XenotypeDef x) => x.IsGermline());
+    }
+
+    private static List<CustomXenotype> GermlineCustomXenotypes(List<CustomXenotype> xenotypes)
+    {
+      return [.. xenotypes.Where((CustomXenotype x) => x.inheritable)];
+    }
+
+    //[HarmonyDebug]
+    [HarmonyPatch(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions")]
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> UpdateXenotypeButtons(IEnumerable<CodeInstruction> instructions)
+    {
+      var filterMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(GermlineXenotypes));
+      var customFilterMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(GermlineCustomXenotypes));
+
+      bool flag = false;
+      List<CodeInstruction> codes = [.. instructions];
+      for (int i = 0; i < codes.Count; i++)
+      {
+        if (!flag && codes[i].opcode == OpCodes.Stloc_1 && i >= 4)
+        {
+          codes[i - 4] = new CodeInstruction(OpCodes.Ldc_R4, 8f);
+          codes[i - 2] = new CodeInstruction(OpCodes.Ldc_R4, 3f);
+
+          flag = true;
+        }
+        else if (codes[i].opcode == OpCodes.Call && codes[i].operand is MethodInfo methodInfo && methodInfo.Name == "get_AllDefs")
+        {
+          codes.Insert(i + 1, new CodeInstruction(OpCodes.Call, filterMethod));
+        }
+        else if (codes[i].opcode == OpCodes.Call && codes[i].operand is MethodInfo methodInfo2 && methodInfo2.Name == "get_CustomXenotypes")
+        {
+          codes.Insert(i + 1, new CodeInstruction(OpCodes.Call, customFilterMethod));
+        }
+      }
+
+      return codes;
+    }
+
+
+    [HarmonyPatch(typeof(StartingPawnUtility), "EnsureGenerationRequestInRangeOf")]
+    [HarmonyPostfix]
+    public static void EnsureXenogerms(int index)
+    {
+      while (forcedXenogerms.Count <= index)
+      {
+        forcedXenogerms.Add(null);
+      }
+      while (forcedCustomXenogerms.Count <= index)
+      {
+        forcedCustomXenogerms.Add(null);
+      }
+      while (allowedXenogerms.Count <= index)
+      {
+        allowedXenogerms.Add(null);
+      }
+
+      while (newForcedXenogerms.Count <= index)
+      {
+        newForcedXenogerms.Add(null);
+      }
+      while (newForcedCustomXenogerms.Count <= index)
+      {
+        newForcedCustomXenogerms.Add(null);
+      }
+      while (newAllowedXenogerms.Count <= index)
+      {
+        newAllowedXenogerms.Add(null);
+      }
+    }
+
+    [HarmonyPatch(typeof(StartingPawnUtility), nameof(StartingPawnUtility.ReorderRequests))]
+    [HarmonyPostfix]
+    public static void ReorderXenogerms(int from, int to)
+    {
+      forcedXenogerms.ReorderItem(from, to);
+      forcedCustomXenogerms.ReorderItem(from, to);
+      allowedXenogerms.ReorderItem(from, to);
+    }
+
+    [HarmonyPatch(typeof(StartingPawnUtility), nameof(StartingPawnUtility.RandomizePawn))]
+    [HarmonyPostfix]
+    private static void AddXenogerm(int pawnIndex)
+    {
+      if (TutorSystem.AllowAction("RandomizePawn"))
+      {
+        Pawn pawn = Find.GameInitData.startingAndOptionalPawns[pawnIndex];
+        pawn.genes.ClearXenogenes();
+        if (forcedXenogerms[pawnIndex] != null)
+        {
+          pawn.genes.SetXenotype(forcedXenogerms[pawnIndex]);
+        }
+        else if (forcedCustomXenogerms[pawnIndex] != null)
+        {
+          pawn.genes.xenotypeName = forcedCustomXenogerms[pawnIndex].name;
+          pawn.genes.iconDef = forcedCustomXenogerms[pawnIndex].IconDef;
+          foreach (GeneDef gene in forcedCustomXenogerms[pawnIndex].genes)
+          {
+            pawn.genes.AddGene(gene, !forcedCustomXenogerms[pawnIndex].inheritable);
+          }
+        }
+        else if (allowedXenogerms[pawnIndex] != null && allowedXenogerms[pawnIndex].TryRandomElement(out var result))
+        {
+          pawn.genes.SetXenotype(result);
+        }
+      }
+    }
+
+    [HarmonyPatch(typeof(CharacterCardUtility), "SetupGenerationRequest")]
+    [HarmonyPrefix]
+    public static void AddBaselinerToRandom(ref List<XenotypeDef> allowedXenotypes)
+    {
+      if (allowedXenotypes != null && allowedXenotypes.Count > 0)
+      {
+        allowedXenotypes.AddUnique(XenotypeDefOf.Baseliner);
+      }
+    }
+
+    public static void ConfirmNewXenogerms(int pawnIndex)
+    {
+      EnsureXenogerms(pawnIndex);
+      forcedXenogerms[pawnIndex] = newForcedXenogerms[pawnIndex];
+      forcedCustomXenogerms[pawnIndex] = newForcedCustomXenogerms[pawnIndex];
+      allowedXenogerms[pawnIndex] = newAllowedXenogerms[pawnIndex];
+    }
+
+    [HarmonyPatch(typeof(StartingPawnUtility), nameof(StartingPawnUtility.SetGenerationRequest))]
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> PatchSetupGenerationRequest(IEnumerable<CodeInstruction> instructions)
+    {
+      var confirmMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(ConfirmNewXenogerms));
+
+      yield return new CodeInstruction(OpCodes.Ldarg_0);
+      yield return new CodeInstruction(OpCodes.Call, confirmMethod);
+      foreach (CodeInstruction instruction in instructions)
+      {
+        yield return instruction;
+      }
+    }
+
+    [HarmonyPatch(typeof(CharacterCardUtility), "LifestageAndXenotypeOptions")]
+    [HarmonyPostfix]
+    public static void ExtendXenotypeOptions(Pawn pawn, Rect randomizeRect, bool creationMode, bool allowsChildSelection, Action randomizeCallback)
+    {
+      float width = (randomizeRect.width - 8f) / 3f;
+      float x2 = randomizeRect.x + 2 * width + 8f;
+      int startingPawnIndex = StartingPawnUtility.PawnIndex(pawn);
+      PawnGenerationRequest existing = StartingPawnUtility.GetGenerationRequest(startingPawnIndex);
+
+      string xenotypeLabel = GetXenotypeLabel(startingPawnIndex);
+      Texture2D xenotypeIcon = GetXenotypeIcon(startingPawnIndex);
+      var setupGenerationRequest = AccessTools.Method(typeof(CharacterCardUtility), "SetupGenerationRequest");
+
+
+
+      Rect rect4 = new Rect(x2, randomizeRect.y + randomizeRect.height + 4f, width, randomizeRect.height);
+      Text.Anchor = TextAnchor.MiddleCenter;
+      Rect rect5 = rect4;
+      rect5.y += rect4.height + 4f;
+      rect5.height = Text.LineHeight;
+      //Widgets.Label(rect5, GetXenotypeLabel(startingPawnIndex).Truncate(rect5.width));
+      Widgets.Label(rect5, xenotypeLabel.Truncate(rect5.width));
+      Text.Anchor = TextAnchor.UpperLeft;
+      Rect rect6 = new Rect(rect4.x, rect4.y, rect4.width, rect5.yMax - rect4.yMin);
+      if (Mouse.IsOver(rect6))
+      {
+        Widgets.DrawHighlight(rect6);
+        if (Find.WindowStack.FloatMenu == null)
+        {
+          TooltipHandler.TipRegion(rect6, xenotypeLabel.Colorize(ColoredText.TipSectionTitleColor) + "\n\n" + "XenotypeSelectionDesc".Translate());
+        }
+      }
+      if (!Widgets.ButtonImageWithBG(rect4, xenotypeIcon, new Vector2(22f, 22f)) || !TutorSystem.AllowAction("ChangeXenotype"))
+      {
+        return;
+      }
+      int index2 = startingPawnIndex;
+      List<FloatMenuOption> list = new List<FloatMenuOption>
+      {
+        new FloatMenuOption("AnyNonArchite".Translate().CapitalizeFirst(), delegate
+        {
+          List<XenotypeDef> allowedXenotypes = DefDatabase<XenotypeDef>.AllDefs.Where((XenotypeDef x) => !x.Archite && x != XenotypeDefOf.Baseliner && !x.inheritable).ToList();
+          EnsureXenogerms(startingPawnIndex);
+          forcedXenogerms[startingPawnIndex] = null;
+          forcedCustomXenogerms[startingPawnIndex] = null;
+          allowedXenogerms[startingPawnIndex] = allowedXenotypes;
+          newForcedXenogerms[startingPawnIndex] = null;
+          newForcedCustomXenogerms[startingPawnIndex] = null;
+          newAllowedXenogerms[startingPawnIndex] = allowedXenotypes;
+          setupGenerationRequest.Invoke(null, [index2, existing.ForcedXenotype, existing.ForcedCustomXenotype, existing.AllowedXenotypes, 0.5f, (PawnGenerationRequest existing) => allowedXenogerms[startingPawnIndex] == null, randomizeCallback, false]);
+        }),
+        new FloatMenuOption("XenotypeEditor".Translate() + "...", delegate
+        {
+          Find.WindowStack.Add(new Dialog_CreateXenotype(index2, delegate
+          {
+            CharacterCardUtility.cachedCustomXenotypes = null;
+            randomizeCallback();
+          }));
+        }, MenuOptionPriority.Default, delegate (Rect r)
+        {
+          TooltipHandler.TipRegion(r, "No xenogerm will be applied.");
+        }, null, 24f, null, null, playSelectionSound: true, 0),
+        new FloatMenuOption("NoXenogerm".Translate().CapitalizeFirst(), delegate
+        {
+          EnsureXenogerms(startingPawnIndex);
+          bool allowChange = false;
+          if (forcedXenogerms[startingPawnIndex] != null || forcedCustomXenogerms[startingPawnIndex] != null || allowedXenogerms[startingPawnIndex] != null)
+          {
+            forcedXenogerms[startingPawnIndex] = null;
+            forcedCustomXenogerms[startingPawnIndex] = null;
+            allowedXenogerms[startingPawnIndex] = null;
+            allowChange = true;
+          }
+          newForcedXenogerms[startingPawnIndex] = null;
+          newForcedCustomXenogerms[startingPawnIndex] = null;
+          newAllowedXenogerms[startingPawnIndex] = null;
+          setupGenerationRequest.Invoke(null, [index2, existing.ForcedXenotype, existing.ForcedCustomXenotype, existing.AllowedXenotypes, 0.5f, (PawnGenerationRequest existing) => allowChange, randomizeCallback, true]);
+        }),
+      };
+      foreach (XenotypeDef item in DefDatabase<XenotypeDef>.AllDefs.Where((XenotypeDef x) => x != XenotypeDefOf.Baseliner && x != XPPDefs.NoXenogerm && !x.inheritable).OrderBy((XenotypeDef x) => 0f - x.displayPriority))
+      {
+        XenotypeDef xenotype2 = item;
+        list.Add(new FloatMenuOption(xenotype2.LabelCap, delegate
+        {
+          EnsureXenogerms(startingPawnIndex);
+          newForcedXenogerms[startingPawnIndex] = xenotype2;
+          newForcedCustomXenogerms[startingPawnIndex] = null;
+          newAllowedXenogerms[startingPawnIndex] = null;
+          setupGenerationRequest.Invoke(null, [index2, existing.ForcedXenotype, existing.ForcedCustomXenotype, existing.AllowedXenotypes, 0f, (PawnGenerationRequest existing) => XenotypeValidator(existing, xenotype2, startingPawnIndex), randomizeCallback, true]);
+        }, xenotype2.Icon, XenotypeDef.IconColor, MenuOptionPriority.Default, delegate (Rect r)
+        {
+          TooltipHandler.TipRegion(r, xenotype2.descriptionShort ?? xenotype2.description);
+        }, null, 24f, (Rect r) => Widgets.InfoCardButton(r.x, r.y + 3f, xenotype2) ? true : false, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+      }
+      foreach (CustomXenotype customXenotype in CharacterCardUtility.CustomXenotypesForReading.Where((CustomXenotype x) => !x.inheritable))
+      {
+        CustomXenotype customInner = customXenotype;
+        list.Add(new FloatMenuOption(customInner.name.CapitalizeFirst() + " (" + "Custom".Translate() + ")", delegate
+        {
+          EnsureXenogerms(startingPawnIndex);
+          newForcedXenogerms[startingPawnIndex] = null;
+          newForcedCustomXenogerms[startingPawnIndex] = customInner;
+          newAllowedXenogerms[startingPawnIndex] = null;
+          setupGenerationRequest.Invoke(null, [index2, existing.ForcedXenotype, existing.ForcedCustomXenotype, existing.AllowedXenotypes, 0f, (PawnGenerationRequest existing) => CustomXenotypeValidator(existing, customInner, startingPawnIndex), randomizeCallback, true]);
+        }, customInner.IconDef.Icon, XenotypeDef.IconColor, MenuOptionPriority.Default, null, null, 24f, delegate (Rect r)
+        {
+          if (Widgets.ButtonImage(new Rect(r.x, r.y + (r.height - r.width) / 2f, r.width, r.width), TexButton.Delete, GUI.color))
+          {
+            Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("ConfirmDelete".Translate(customInner.name.CapitalizeFirst()), delegate
+            {
+              string path = GenFilePaths.AbsFilePathForXenotype(customInner.name);
+              if (File.Exists(path))
+              {
+                File.Delete(path);
+                CharacterCardUtility.cachedCustomXenotypes = null;
+              }
+            }, destructive: true));
+            return true;
+          }
+          return false;
+        }, null, playSelectionSound: true, 0, HorizontalJustification.Left, extraPartRightJustified: true));
+      }
+      Find.WindowStack.Add(new FloatMenu(list));
+      static bool CustomXenotypeValidator(PawnGenerationRequest req, CustomXenotype xenotype, int startingPawnIndex)
+      {
+        if (TutorSystem.TutorialMode && req.MustBeCapableOfViolence && xenotype.genes.Any((GeneDef g) => g.disabledWorkTags.HasFlag(WorkTags.Violent)))
+        {
+          Messages.Message("MessageStartingPawnCapableOfViolence".Translate(), MessageTypeDefOf.RejectInput, historical: false);
+          return false;
+        }
+        return forcedCustomXenogerms[startingPawnIndex] != xenotype;
+      }
+      static bool XenotypeValidator(PawnGenerationRequest req, XenotypeDef xenotype, int startingPawnIndex)
+      {
+        if (TutorSystem.TutorialMode && req.MustBeCapableOfViolence && xenotype.AllGenes.Any((GeneDef g) => g.disabledWorkTags.HasFlag(WorkTags.Violent)))
+        {
+          Messages.Message("MessageStartingPawnCapableOfViolence".Translate(), MessageTypeDefOf.RejectInput, historical: false);
+          return false;
+        }
+        return forcedXenogerms[startingPawnIndex] != xenotype;
+      }
+    }
+  }
+
+
+  [HarmonyPatch]
+  public class CharacterCardUtilityPatch
+  {
+    public static MethodBase TargetMethod()
+    {
+      return AccessTools.FindIncludingInnerTypes(typeof(CharacterCardUtility), (type) =>
+        AccessTools.FirstMethod(type, (method) => method.IsAssembly && PatchProcessor.ReadMethodBody(method).Where((KeyValuePair<OpCode, object> instruction) =>
+        instruction.Key == OpCodes.Call && instruction.Value is MethodInfo methodInfo && methodInfo.Name == "get_AllDefs").Any()));
+    }
+
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> UpdateXenotypeButtons(IEnumerable<CodeInstruction> instructions)
+    {
+      var filterMethod = AccessTools.Method(typeof(XenotypeChanges), nameof(XenotypeChanges.GermlineXenotypes));
+
+      List<CodeInstruction> codes = [.. instructions];
+      for (int i = 0; i < codes.Count; i++)
+      {
+        if (codes[i].opcode == OpCodes.Call && codes[i].operand is MethodInfo methodInfo && methodInfo.Name == "get_AllDefs")
+        {
+          codes.Insert(i + 1, new CodeInstruction(OpCodes.Call, filterMethod));
+        }
+      }
+
+      return codes;
     }
   }
 }

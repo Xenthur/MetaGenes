@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+	<XenotypeDef>
+		<defName>NoXenogerm</defName>
+		<label>no xenogerm</label>
+		<iconPath>XenotypeIcons/NoXenogerm</iconPath>
+	</XenotypeDef>
+</Defs>

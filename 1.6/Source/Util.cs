@@ -1,4 +1,5 @@
-﻿using RimWorld;
+﻿using HarmonyLib;
+using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
@@ -38,6 +39,45 @@ namespace XenotypePlusPlus
     public static bool IsGermline(this XenotypeDef xenotype)
     {
       return xenotype.inheritable || xenotype == XenotypeDefOf.Baseliner;
+    }
+
+    public static void RemoveXenogerm(this Pawn_GeneTracker genes)
+    {
+      genes.ClearXenogenes();
+      if ((genes.CustomXenotype != null && !genes.CustomXenotype.inheritable) || !genes.Xenotype.IsGermline())
+      {
+        GermlineComp germlineData = genes.pawn.GetComp<GermlineComp>();
+        var xenotype = AccessTools.FieldRefAccess<Pawn_GeneTracker, XenotypeDef>("xenotype");
+        var xenotypeName = AccessTools.FieldRefAccess<Pawn_GeneTracker, string>("xenotypeName");
+        var cachedHasCustomXenotype = AccessTools.FieldRefAccess<Pawn_GeneTracker, bool?>("cachedHasCustomXenotype");
+        var cachedCustomXenotype = AccessTools.FieldRefAccess<Pawn_GeneTracker, CustomXenotype>("cachedCustomXenotype");
+
+        xenotype(genes) = germlineData.Germline ?? XenotypeDefOf.Baseliner;
+        xenotypeName(genes) = null;
+        cachedHasCustomXenotype(genes) = null;
+        cachedCustomXenotype(genes) = null;
+
+        _ = genes.CustomXenotype;
+      }
+    }
+
+    public static void ReorderItem<T>(this List<T> list, int from, int to)
+    {
+      T temp = list[from];
+      list.Insert(to, temp);
+      list.RemoveAt((from < to) ? from : (from + 1));
+    }
+  }
+
+  [DefOf]
+  public static class XPPDefs
+  {
+    [MayRequire("Xenthur.XenotypePlusPlus")]
+    public static XenotypeDef NoXenogerm;
+
+    static XPPDefs()
+    {
+      DefOfHelper.EnsureInitializedInCtor(typeof(Util));
     }
   }
 
